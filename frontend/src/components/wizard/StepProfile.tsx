@@ -34,6 +34,8 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
     setEnhancing(true)
     setEnhanceError(null)
     try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 60000)
       const res = await fetch(`${webhookUrl}/cv-enhance-resume`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -43,9 +45,18 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
           nom: data.nom || '',
           prenom: data.prenom || '',
         }),
+        signal: controller.signal,
       })
+      clearTimeout(timeout)
       if (!res.ok) throw new Error(`Erreur serveur : ${res.status}`)
-      const result = await res.json()
+      const text = await res.text()
+      if (!text.trim()) throw new Error('Le serveur IA est temporairement indisponible. Réessayez dans quelques secondes.')
+      let result: { text?: string }
+      try {
+        result = JSON.parse(text)
+      } catch {
+        throw new Error('Réponse invalide du serveur. Réessayez.')
+      }
       const improved: string = result.text || ''
       if (!improved.trim()) throw new Error('Réponse vide reçue')
       onChange({ resume_profil: improved.trim() })

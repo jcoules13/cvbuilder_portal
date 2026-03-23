@@ -208,11 +208,11 @@ export default function RomeoPredict({
 
       {/* Results */}
       {results.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-2">
           <p className="text-sm font-semibold text-gray-700">
             ✅ {results.length} métier{results.length > 1 ? 's' : ''} trouvé{results.length > 1 ? 's' : ''} :
           </p>
-          <div className="space-y-2">
+          <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
             {results.map((result) => {
               const scorePercent = Math.round(result.scorePrediction * 100)
               const cardKey = result.identifiant + result.codeRome
@@ -221,7 +221,7 @@ export default function RomeoPredict({
               return (
                 <div
                   key={cardKey}
-                  className={`border-2 rounded-xl p-4 transition-all ${
+                  className={`border-2 rounded-xl p-3 transition-all ${
                     isSelected
                       ? 'border-primary-500 bg-primary-50'
                       : `${getScoreBgCard(result.scorePrediction)} hover:border-primary-300`
