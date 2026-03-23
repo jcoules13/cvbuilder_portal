@@ -169,14 +169,33 @@ export default function StepSkills({ data, onChange }: StepSkillsProps) {
         onChange={(val) => onChange({ competences_techniques: val })}
       />
 
-      <div className="border-t border-gray-200 pt-6">
+      <div className="border-t border-gray-200 pt-4 space-y-2">
         <ArrayFieldEditor
-          label="Qualites personnelles (soft skills)"
+          label="Qualités personnelles (soft skills)"
           value={data.soft_skills}
           onChange={(val) => onChange({ soft_skills: val })}
-          placeholder="ex: Travail en equipe, Communication, Rigueur..."
+          placeholder="ex: Travail en équipe, Communication, Rigueur..."
           addButtonText="Ajouter"
         />
+        <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-2">
+          <p className="text-sm font-medium text-gray-700">
+            🎤 Dictez vos qualités personnelles
+          </p>
+          <AudioCapture
+            onTranscription={(text) => {
+              // Split transcription into individual soft skills
+              const items = text
+                .split(/[,;.\n]+/)
+                .map((s) => s.trim())
+                .filter((s) => s.length > 1)
+                .filter((s) => !data.soft_skills.includes(s))
+              if (items.length > 0) {
+                onChange({ soft_skills: [...data.soft_skills, ...items] })
+              }
+            }}
+            placeholder=""
+          />
+        </div>
       </div>
     </div>
   )
