@@ -1,4 +1,7 @@
+import { useState } from 'react'
+import { ChevronDown, ChevronUp, Lightbulb } from 'lucide-react'
 import type { CVData } from '../../types/cv'
+import RomeoPredict from '../shared/RomeoPredict'
 
 interface StepProfileProps {
   data: CVData
@@ -6,6 +9,13 @@ interface StepProfileProps {
 }
 
 export default function StepProfile({ data, onChange }: StepProfileProps) {
+  const [romeoOpen, setRomeoOpen] = useState(false)
+
+  const handleRomeoSelect = (libelle: string, _codeRome: string) => {
+    onChange({ titre_profil: libelle })
+    setRomeoOpen(false)
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -29,6 +39,36 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
         <p className="text-xs text-gray-500 mt-1">
           Ce titre apparaitra en tete de votre CV.
         </p>
+
+        {/* ROMEO collapse block */}
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={() => setRomeoOpen((v) => !v)}
+            className="flex items-center gap-2 text-sm font-medium text-primary-700 hover:text-primary-800 transition-colors"
+          >
+            <Lightbulb className="h-4 w-4 text-yellow-500" />
+            💡 Besoin d'aide pour trouver votre métier ?
+            {romeoOpen ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </button>
+
+          {romeoOpen && (
+            <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <p className="text-sm text-blue-800 mb-3 font-medium">
+                Décrivez ce que vous faites au travail avec vos propres mots.
+                L'IA va trouver le titre de métier qui correspond.
+              </p>
+              <RomeoPredict
+                onSelect={handleRomeoSelect}
+                initialText={data.titre_profil}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       <div>
