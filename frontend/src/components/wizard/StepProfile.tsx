@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { ChevronDown, ChevronUp, Lightbulb } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import type { CVData } from '../../types/cv'
 import RomeoPredict from '../shared/RomeoPredict'
 import AudioCapture from '../shared/AudioCapture'
@@ -10,11 +10,23 @@ interface StepProfileProps {
 }
 
 export default function StepProfile({ data, onChange }: StepProfileProps) {
+  // ROMEO state
   const [romeoOpen, setRomeoOpen] = useState(false)
-  // Ref to imperatively set the RomeoPredict textarea value via a shared state
   const [romeoText, setRomeoText] = useState('')
   const [autoSearch, setAutoSearch] = useState(false)
   const romeoSearchRef = useRef<(() => void) | null>(null)
+
+  // Audio for titre_profil
+  const [audioOpen, setAudioOpen] = useState(false)
+
+  // Audio for resume_profil
+  const [resumeAudioOpen, setResumeAudioOpen] = useState(false)
+
+  // AI enhance state
+  const [enhancing, setEnhancing] = useState(false)
+  const [enhanceError, setEnhanceError] = useState<string | null>(null)
+
+  const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL || ''
 
   const handleRomeoSelect = (libelle: string, _codeRome: string) => {
     onChange({ titre_profil: libelle })
@@ -22,13 +34,55 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
   }
 
   /**
-   * Called when AudioCapture returns a transcription.
-   * Opens the ROMEO block, fills the textarea, and triggers search.
+   * Called when AudioCapture (titre_profil) returns a transcription.
+   * Opens ROMEO block, fills the textarea, and triggers auto-search.
    */
   const handleAudioTranscription = (text: string) => {
     setRomeoText(text)
     setRomeoOpen(true)
+    setAudioOpen(false)
     setAutoSearch(true)
+  }
+
+  /**
+   * Called when AudioCapture (resume_profil) returns a transcription.
+   * Appends/replaces the resume textarea.
+   */
+  const handleResumeAudioTranscription = (text: string) => {
+    onChange({ resume_profil: text })
+    setResumeAudioOpen(false)
+  }
+
+  /**
+   * Sends current resume_profil to AI for improvement.
+   */
+  const handleEnhanceResume = async () => {
+    const texte = data.resume_profil?.trim()
+    if (!texte) return
+    setEnhancing(true)
+    setEnhanceError(null)
+    try {
+      const res = await fetch(`${webhookUrl}/cv-enhance-resume`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          texte,
+          titre_profil: data.titre_profil || '',
+          nom: data.nom || '',
+          prenom: data.prenom || '',
+        }),
+      })
+      if (!res.ok) throw new Error(`Erreur serveur : ${res.status}`)
+      const result = await res.json()
+      const improved: string = result.text || ''
+      if (!improved.trim()) throw new Error('Réponse vide reçue')
+      onChange({ resume_profil: improved.trim() })
+    } catch (err: unknown) {
+      const error = err as Error
+      setEnhanceError('Erreur : ' + (error?.message || 'Veuillez réessayer'))
+    } finally {
+      setEnhancing(false)
+    }
   }
 
   return (
@@ -40,6 +94,7 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
         </p>
       </div>
 
+      {/* Titre du profil */}
       <div>
         <label className="label">
           Titre du profil <span className="text-red-500">*</span>
@@ -55,74 +110,53 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
           Ce titre apparaitra en tete de votre CV.
         </p>
 
-        {/* ROMEO collapse block */}
-        <div className="mt-3">
+        {/* Compact inline AI / audio buttons */}
+        <div className="flex items-center gap-2 mt-2">
           <button
             type="button"
-            onClick={() => setRomeoOpen((v) => !v)}
-            className="flex items-center gap-2 text-sm font-medium text-primary-700 hover:text-primary-800 transition-colors"
+            onClick={() => { setRomeoOpen((v) => !v); setAudioOpen(false) }}
+            className="flex items-center gap-1.5 py-1.5 px-3 text-xs font-medium text-primary-700 bg-primary-50 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors"
           >
-            <Lightbulb className="h-4 w-4 text-yellow-500" />
-            💡 Besoin d'aide pour trouver votre métier ?
-            {romeoOpen ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
+            💡 Aide IA
           </button>
-
-          {romeoOpen && (
-            <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-4">
-              <p className="text-sm text-blue-800 mb-3 font-medium">
-                Décrivez ce que vous faites au travail avec vos propres mots.
-                L'IA va trouver le titre de métier qui correspond.
-              </p>
-              <RomeoPredict
-                onSelect={handleRomeoSelect}
-                initialText={romeoText || data.titre_profil}
-                autoSearch={autoSearch}
-                onAutoSearchDone={() => setAutoSearch(false)}
-                searchRef={romeoSearchRef}
-              />
-
-              {/* Divider */}
-              <div className="relative flex items-center my-2">
-                <div className="flex-grow border-t border-blue-200" />
-                <span className="mx-3 text-xs text-blue-400 font-medium">ou</span>
-                <div className="flex-grow border-t border-blue-200" />
-              </div>
-
-              {/* Audio capture inside ROMEO block */}
-              <div className="p-3 bg-white border border-blue-100 rounded-xl">
-                <p className="text-sm font-medium text-gray-700 mb-3 text-center">
-                  🎤 Décrivez votre métier à voix haute
-                </p>
-                <AudioCapture
-                  onTranscription={(text) => {
-                    setRomeoText(text)
-                    setAutoSearch(true)
-                  }}
-                  placeholder="Parlez et l'IA retranscrira ce que vous dites"
-                />
-              </div>
-            </div>
-          )}
+          <button
+            type="button"
+            onClick={() => { setAudioOpen((v) => !v); setRomeoOpen(false) }}
+            className="flex items-center gap-1.5 py-1.5 px-3 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-200 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            🎤 Dicter
+          </button>
         </div>
 
-        {/* Audio capture outside ROMEO block — shortcut to open + fill */}
-        {!romeoOpen && (
-          <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-xl">
-            <p className="text-sm font-medium text-gray-700 mb-3 text-center">
-              🎤 Ou décrivez votre métier à voix haute
-            </p>
+        {/* Audio inline (for titre_profil) */}
+        {audioOpen && (
+          <div className="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-xl">
             <AudioCapture
               onTranscription={handleAudioTranscription}
-              placeholder="Parlez de votre métier, l'IA trouvera la bonne appellation ROME"
+              placeholder="Décrivez votre métier — l'IA trouvera l'appellation ROME"
+            />
+          </div>
+        )}
+
+        {/* ROMEO collapse block */}
+        {romeoOpen && (
+          <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-3">
+            <p className="text-sm text-blue-800 font-medium">
+              Décrivez ce que vous faites au travail avec vos propres mots.
+              L'IA va trouver le titre de métier qui correspond.
+            </p>
+            <RomeoPredict
+              onSelect={handleRomeoSelect}
+              initialText={romeoText || data.titre_profil}
+              autoSearch={autoSearch}
+              onAutoSearchDone={() => setAutoSearch(false)}
+              searchRef={romeoSearchRef}
             />
           </div>
         )}
       </div>
 
+      {/* Resume du profil */}
       <div>
         <label className="label">Resume du profil</label>
         <textarea
@@ -141,6 +175,47 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
             {data.resume_profil.length}/1000
           </p>
         </div>
+
+        {/* Audio + AI enhance buttons for resume */}
+        <div className="flex flex-wrap items-center gap-2 mt-2">
+          <button
+            type="button"
+            onClick={() => setResumeAudioOpen((v) => !v)}
+            className="flex items-center gap-1.5 py-1.5 px-3 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-200 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            🎤 Dicter mon résumé
+          </button>
+          <button
+            type="button"
+            onClick={handleEnhanceResume}
+            disabled={enhancing || !data.resume_profil?.trim()}
+            className="flex items-center gap-1.5 py-1.5 px-3 text-xs font-medium text-purple-700 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {enhancing ? (
+              <>
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Amélioration...
+              </>
+            ) : (
+              '✨ Améliorer avec l\'IA'
+            )}
+          </button>
+        </div>
+
+        {/* Error feedback for AI enhance */}
+        {enhanceError && (
+          <p className="mt-2 text-xs text-red-600">{enhanceError}</p>
+        )}
+
+        {/* Audio capture for resume */}
+        {resumeAudioOpen && (
+          <div className="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-xl">
+            <AudioCapture
+              onTranscription={handleResumeAudioTranscription}
+              placeholder="Parlez de votre parcours et de vos points forts"
+            />
+          </div>
+        )}
       </div>
     </div>
   )

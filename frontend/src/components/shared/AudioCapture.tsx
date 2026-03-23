@@ -170,19 +170,19 @@ export default function AudioCapture({
   // ── IDLE ──────────────────────────────────────────────────────────────────
   if (state === 'idle') {
     return (
-      <div className={`flex flex-col items-center gap-3 ${className}`}>
+      <div className={`flex flex-wrap items-center gap-3 ${className}`}>
         {placeholder && (
-          <p className="text-sm text-gray-500 text-center">{placeholder}</p>
+          <p className="text-sm text-gray-500">{placeholder}</p>
         )}
         <button
           type="button"
           onClick={startRecording}
-          className="flex items-center gap-3 px-8 py-4 bg-primary-600 text-white text-xl font-bold rounded-2xl hover:bg-primary-700 active:scale-95 transition-all shadow-md focus:outline-none focus:ring-4 focus:ring-primary-300"
+          className="flex items-center gap-2 py-2 px-4 text-sm font-semibold bg-primary-600 text-white rounded-xl hover:bg-primary-700 active:scale-95 transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-300"
           aria-label="Commencer l'enregistrement vocal"
         >
           🎤 Parler
         </button>
-        <p className="text-xs text-gray-400">Max {Math.round(maxDuration / 60)} min</p>
+        <span className="text-xs text-gray-400">max {Math.round(maxDuration / 60)} min</span>
       </div>
     )
   }
