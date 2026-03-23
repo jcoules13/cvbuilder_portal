@@ -120,7 +120,6 @@ function parseCompetences(text: string): string[] {
 }
 
 export default function StepSkills({ data, onChange }: StepSkillsProps) {
-  const [showAudio, setShowAudio] = useState(false)
   const [audioAdded, setAudioAdded] = useState<string[]>([])
 
   const handleDictation = (text: string) => {
@@ -132,8 +131,6 @@ export default function StepSkills({ data, onChange }: StepSkillsProps) {
       onChange({ competences_techniques: [...current, ...newItems] })
       setAudioAdded(newItems)
     }
-
-    setShowAudio(false)
   }
 
   return (
@@ -146,33 +143,14 @@ export default function StepSkills({ data, onChange }: StepSkillsProps) {
       </div>
 
       {/* Audio dictation section */}
-      <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
-        {!showAudio ? (
-          <button
-            type="button"
-            onClick={() => { setShowAudio(true); setAudioAdded([]) }}
-            className="flex items-center gap-3 px-6 py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 active:scale-95 transition-all shadow-sm text-base w-full justify-center"
-          >
-            🎤 Dicter mes compétences
-          </button>
-        ) : (
-          <>
-            <p className="text-sm font-medium text-gray-700 text-center">
-              🎤 Parlez de vos compétences — elles seront ajoutées automatiquement
-            </p>
-            <AudioCapture
-              onTranscription={handleDictation}
-              placeholder="Ex : je sais conduire un chariot, je parle anglais, je gère les stocks..."
-            />
-            <button
-              type="button"
-              onClick={() => setShowAudio(false)}
-              className="text-xs text-gray-400 hover:text-gray-600 w-full text-center"
-            >
-              Annuler
-            </button>
-          </>
-        )}
+      <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-2">
+        <p className="text-sm font-medium text-gray-700">
+          🎤 Dictez vos compétences — elles seront ajoutées automatiquement
+        </p>
+        <AudioCapture
+          onTranscription={handleDictation}
+          placeholder=""
+        />
 
         {audioAdded.length > 0 && (
           <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
