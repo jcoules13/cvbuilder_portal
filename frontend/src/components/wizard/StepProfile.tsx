@@ -14,9 +14,6 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
   const [autoSearch, setAutoSearch] = useState(false)
   const romeoSearchRef = useRef<(() => void) | null>(null)
 
-  // Resume audio
-  const [resumeAudioOpen, setResumeAudioOpen] = useState(false)
-
   // AI enhance state
   const [enhancing, setEnhancing] = useState(false)
   const [enhanceError, setEnhanceError] = useState<string | null>(null)
@@ -29,7 +26,6 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
 
   const handleResumeAudioTranscription = (text: string) => {
     onChange({ resume_profil: text })
-    setResumeAudioOpen(false)
   }
 
   const handleEnhanceResume = async () => {
@@ -127,15 +123,12 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
           </p>
         </div>
 
-        {/* Buttons row: Parler + Améliorer IA */}
+        {/* Buttons row: Parler (direct) + Améliorer IA */}
         <div className="flex flex-wrap items-center gap-2 mt-2">
-          <button
-            type="button"
-            onClick={() => setResumeAudioOpen((v) => !v)}
-            className="flex items-center gap-1.5 py-2 px-4 text-sm font-semibold bg-primary-600 text-white rounded-xl hover:bg-primary-700 active:scale-95 transition-all shadow-sm"
-          >
-            🎤 Parler
-          </button>
+          <AudioCapture
+            onTranscription={handleResumeAudioTranscription}
+            placeholder=""
+          />
           <button
             type="button"
             onClick={handleEnhanceResume}
@@ -155,15 +148,6 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
 
         {enhanceError && (
           <p className="mt-1 text-xs text-red-600">{enhanceError}</p>
-        )}
-
-        {resumeAudioOpen && (
-          <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-xl">
-            <AudioCapture
-              onTranscription={handleResumeAudioTranscription}
-              placeholder="Parlez de votre parcours et de vos points forts"
-            />
-          </div>
         )}
       </div>
     </div>
