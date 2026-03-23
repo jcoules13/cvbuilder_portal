@@ -102,38 +102,33 @@ export default function RomeoPredict({
         throw new Error(`Erreur serveur : ${res.status}`)
       }
 
-      const data: RomeoPredictionResult = await res.json()
+      const data = await res.json()
 
-      // The ROMEO v2 API wraps results per appellation
-      // Shape: [{ identifiant, intitule, metiersRome: [{ codeRome, libelleRome, scorePrediction, ... }] }]
-      // OR direct flat list depending on n8n response unwrapping
+      // ROMEO v2 response formats:
+      // 1. Object: { metiersRome: [...], identifiant, intitule, contexte }
+      // 2. Array: [{ metiersRome: [...], identifiant, intitule }]
       let flat: RomeoAppellation[] = []
 
-      if (Array.isArray(data)) {
-        // data is array of appellation predictions
-        const arr = data as Array<{
-          identifiant: string
-          intitule: string
-          metiersRome?: Array<{ codeRome: string; libelleRome: string; scorePrediction: number }>
-          appellations?: RomeoAppellation[]
-        }>
-        for (const item of arr) {
-          if (item.metiersRome) {
-            for (const metier of item.metiersRome) {
-              flat.push({
-                identifiant: item.identifiant,
-                intitule: item.intitule,
-                codeRome: metier.codeRome,
-                libelleRome: metier.libelleRome,
-                scorePrediction: metier.scorePrediction,
-              })
-            }
+      const extractMetiers = (item: any) => {
+        if (item.metiersRome && Array.isArray(item.metiersRome)) {
+          for (const metier of item.metiersRome) {
+            flat.push({
+              identifiant: metier.codeAppellation || item.identifiant || '',
+              intitule: metier.libelleAppellation || metier.libelleRome || '',
+              codeRome: metier.codeRome,
+              libelleRome: metier.libelleRome,
+              scorePrediction: metier.scorePrediction,
+            })
           }
         }
-      } else if (data.appellations) {
-        flat = data.appellations
-      } else if (data.listeAppellations) {
-        flat = data.listeAppellations
+      }
+
+      if (Array.isArray(data)) {
+        for (const item of data) {
+          extractMetiers(item)
+        }
+      } else if (data && typeof data === 'object') {
+        extractMetiers(data)
       }
 
       // Sort by score descending
