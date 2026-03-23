@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Plus, X, ChevronDown, ChevronUp } from 'lucide-react'
 import type { Experience } from '../../types/cv'
+import RomeMetierAutocomplete from '../shared/RomeMetierAutocomplete'
 
 interface ExperienceEditorProps {
   experiences: Experience[]
@@ -25,7 +26,8 @@ export default function ExperienceEditor({ experiences, onChange }: ExperienceEd
       periode: '',
       titre: '',
       entreprise: '',
-      description: ''
+      description: '',
+      code_rome: undefined,
     }
     onChange([...experiences, newExperience])
     setExpandedIndices(new Set([...expandedIndices, experiences.length]))
@@ -170,13 +172,22 @@ export default function ExperienceEditor({ experiences, onChange }: ExperienceEd
                       <label className="label">
                         Titre du poste <span className="text-red-500">*</span>
                       </label>
-                      <input
-                        type="text"
+                      <RomeMetierAutocomplete
                         value={exp.titre}
-                        onChange={(e) => handleUpdate(index, 'titre', e.target.value)}
-                        placeholder="ex: Developpeur Full Stack"
-                        className={`input ${!exp.titre ? 'border-red-300' : ''}`}
+                        onChange={(libelle, codeRome) => {
+                          const updated = experiences.map((e, i) =>
+                            i === index ? { ...e, titre: libelle, code_rome: codeRome } : e
+                          )
+                          onChange(updated)
+                        }}
+                        placeholder="ex: Aide-soignant, Developpeur..."
+                        hasError={!exp.titre}
                       />
+                      {exp.code_rome && (
+                        <p className="mt-1 text-xs text-primary-600">
+                          Code ROME : {exp.code_rome}
+                        </p>
+                      )}
                       {!exp.titre && (
                         <p className="mt-1 text-sm text-red-600">Ce champ est requis</p>
                       )}

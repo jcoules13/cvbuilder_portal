@@ -3,6 +3,8 @@ export interface Experience {
   titre: string
   entreprise: string
   description: string
+  /** ROME occupation code (optional, auto-filled via autocomplete) */
+  code_rome?: string
 }
 
 export interface Formation {
