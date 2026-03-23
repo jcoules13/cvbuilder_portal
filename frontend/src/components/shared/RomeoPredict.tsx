@@ -25,6 +25,8 @@ export interface RomeoPredictProps {
   onAutoSearchDone?: () => void
   /** Expose search function via ref so parent can call it imperatively */
   searchRef?: React.MutableRefObject<(() => void) | null>
+  /** Optional audio capture slot rendered next to the search button */
+  audioSlot?: React.ReactNode
 }
 
 function getScoreColor(score: number): string {
@@ -52,6 +54,7 @@ export default function RomeoPredict({
   autoSearch = false,
   onAutoSearchDone,
   searchRef,
+  audioSlot,
 }: RomeoPredictProps) {
   const [texte, setTexte] = useState(initialText)
   const [results, setResults] = useState<RomeoAppellation[]>([])
@@ -160,24 +163,24 @@ export default function RomeoPredict({
   }
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={`space-y-2 ${className}`}>
       {/* Input area */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <textarea
           value={texte}
           onChange={(e) => setTexte(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Décrivez votre métier avec vos propres mots... par exemple : je m'occupe des personnes âgées en maison de retraite"
-          rows={3}
-          className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-xl focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none resize-none transition-colors"
+          rows={2}
+          className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-xl focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none resize-none transition-colors"
           aria-label="Décrivez votre métier"
         />
-        <div className="flex justify-end">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={handleSearch}
             disabled={loading || !texte.trim()}
-            className="flex items-center gap-2 py-2 px-4 text-sm font-semibold text-white bg-primary-600 rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+            className="flex items-center gap-1.5 py-2 px-4 text-sm font-semibold text-white bg-primary-600 rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
             aria-busy={loading}
           >
             {loading ? (
@@ -192,6 +195,7 @@ export default function RomeoPredict({
               </>
             )}
           </button>
+          {audioSlot}
         </div>
       </div>
 
