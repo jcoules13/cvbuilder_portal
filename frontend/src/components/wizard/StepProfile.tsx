@@ -11,13 +11,9 @@ interface StepProfileProps {
 
 export default function StepProfile({ data, onChange }: StepProfileProps) {
   // ROMEO state
-  const [romeoOpen, setRomeoOpen] = useState(false)
   const [romeoText, setRomeoText] = useState('')
   const [autoSearch, setAutoSearch] = useState(false)
   const romeoSearchRef = useRef<(() => void) | null>(null)
-
-  // Audio for titre_profil
-  const [audioOpen, setAudioOpen] = useState(false)
 
   // Audio for resume_profil
   const [resumeAudioOpen, setResumeAudioOpen] = useState(false)
@@ -30,7 +26,6 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
 
   const handleRomeoSelect = (libelle: string, _codeRome: string) => {
     onChange({ titre_profil: libelle })
-    setRomeoOpen(false)
   }
 
   /**
@@ -39,8 +34,6 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
    */
   const handleAudioTranscription = (text: string) => {
     setRomeoText(text)
-    setRomeoOpen(true)
-    setAudioOpen(false)
     setAutoSearch(true)
   }
 
@@ -110,50 +103,41 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
           Ce titre apparaitra en tete de votre CV.
         </p>
 
-        {/* Compact inline AI / audio buttons */}
-        <div className="flex items-center gap-2 mt-2">
-          <button
-            type="button"
-            onClick={() => { setRomeoOpen((v) => !v); setAudioOpen(false) }}
-            className="flex items-center gap-1.5 py-1.5 px-3 text-xs font-medium text-primary-700 bg-primary-50 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors"
-          >
-            💡 Aide IA
-          </button>
-          <button
-            type="button"
-            onClick={() => { setAudioOpen((v) => !v); setRomeoOpen(false) }}
-            className="flex items-center gap-1.5 py-1.5 px-3 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-200 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            🎤 Dicter
-          </button>
-        </div>
+        {/* ROMEO block - toujours visible */}
+        <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-3">
+          <p className="text-sm text-blue-800 font-medium">
+            Décrivez ce que vous faites au travail avec vos propres mots.
+            L'IA va trouver le titre de métier qui correspond.
+          </p>
+          <RomeoPredict
+            onSelect={handleRomeoSelect}
+            initialText={romeoText || data.titre_profil}
+            autoSearch={autoSearch}
+            onAutoSearchDone={() => setAutoSearch(false)}
+            searchRef={romeoSearchRef}
+          />
 
-        {/* Audio inline (for titre_profil) */}
-        {audioOpen && (
-          <div className="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-xl">
-            <AudioCapture
-              onTranscription={handleAudioTranscription}
-              placeholder="Décrivez votre métier — l'IA trouvera l'appellation ROME"
-            />
+          {/* Divider */}
+          <div className="relative flex items-center my-2">
+            <div className="flex-grow border-t border-blue-200" />
+            <span className="mx-3 text-xs text-blue-400 font-medium">ou</span>
+            <div className="flex-grow border-t border-blue-200" />
           </div>
-        )}
 
-        {/* ROMEO collapse block */}
-        {romeoOpen && (
-          <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-3">
-            <p className="text-sm text-blue-800 font-medium">
-              Décrivez ce que vous faites au travail avec vos propres mots.
-              L'IA va trouver le titre de métier qui correspond.
+          {/* Audio capture inside ROMEO block */}
+          <div className="p-3 bg-white border border-blue-100 rounded-xl">
+            <p className="text-sm font-medium text-gray-700 mb-3 text-center">
+              🎤 Décrivez votre métier à voix haute
             </p>
-            <RomeoPredict
-              onSelect={handleRomeoSelect}
-              initialText={romeoText || data.titre_profil}
-              autoSearch={autoSearch}
-              onAutoSearchDone={() => setAutoSearch(false)}
-              searchRef={romeoSearchRef}
+            <AudioCapture
+              onTranscription={(text) => {
+                setRomeoText(text)
+                setAutoSearch(true)
+              }}
+              placeholder="Parlez et l'IA retranscrira ce que vous dites"
             />
           </div>
-        )}
+        </div>
       </div>
 
       {/* Resume du profil */}
