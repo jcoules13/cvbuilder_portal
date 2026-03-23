@@ -1,5 +1,6 @@
 import type { CVData } from '../../types/cv'
 import ArrayFieldEditor from '../cv-edit/ArrayFieldEditor'
+import AudioCapture from '../shared/AudioCapture'
 
 interface StepLanguagesProps {
   data: CVData
@@ -7,29 +8,61 @@ interface StepLanguagesProps {
 }
 
 export default function StepLanguages({ data, onChange }: StepLanguagesProps) {
+  const parseAndAdd = (text: string, field: 'langues' | 'loisirs') => {
+    const current = data[field] as string[]
+    const items = text
+      .split(/[,;.\n]+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 1)
+      .filter((s) => !current.includes(s))
+    if (items.length > 0) {
+      onChange({ [field]: [...current, ...items] })
+    }
+  }
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-gray-900">Langues & Loisirs</h2>
         <p className="text-sm text-gray-500 mt-1">
-          Ajoutez les langues que vous parlez et vos centres d'interet.
+          Ajoutez les langues que vous parlez et vos centres d'intérêt.
         </p>
       </div>
 
-      <ArrayFieldEditor
-        label="Langues"
-        value={data.langues}
-        onChange={(val) => onChange({ langues: val })}
-        placeholder="ex: Francais (natif), Anglais (courant), Espagnol (B1)..."
-        addButtonText="Ajouter"
-      />
-
-      <div className="border-t border-gray-200 pt-6">
+      <div className="space-y-2">
+        <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-2">
+          <p className="text-sm font-medium text-gray-700">
+            🎤 Dictez vos langues
+          </p>
+          <AudioCapture
+            onTranscription={(text) => parseAndAdd(text, 'langues')}
+            placeholder=""
+          />
+        </div>
         <ArrayFieldEditor
-          label="Loisirs et centres d'interet"
+          label="Langues"
+          value={data.langues}
+          onChange={(val) => onChange({ langues: val })}
+          placeholder="ex: Français (natif), Anglais (courant), Espagnol (B1)..."
+          addButtonText="Ajouter"
+        />
+      </div>
+
+      <div className="border-t border-gray-200 pt-4 space-y-2">
+        <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-2">
+          <p className="text-sm font-medium text-gray-700">
+            🎤 Dictez vos loisirs et centres d'intérêt
+          </p>
+          <AudioCapture
+            onTranscription={(text) => parseAndAdd(text, 'loisirs')}
+            placeholder=""
+          />
+        </div>
+        <ArrayFieldEditor
+          label="Loisirs et centres d'intérêt"
           value={data.loisirs}
           onChange={(val) => onChange({ loisirs: val })}
-          placeholder="ex: Lecture, Randonnee, Musique..."
+          placeholder="ex: Lecture, Randonnée, Musique..."
           addButtonText="Ajouter"
         />
       </div>
