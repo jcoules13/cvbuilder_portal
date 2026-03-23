@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Search, CheckCircle, Loader2 } from 'lucide-react'
 
 // ROMEO API response types
@@ -19,6 +19,12 @@ export interface RomeoPredictProps {
   onSelect: (libelle: string, codeRome: string) => void
   initialText?: string
   className?: string
+  /** If true, trigger a search as soon as the component mounts / initialText changes */
+  autoSearch?: boolean
+  /** Called after the auto-search has been triggered, so parent can reset the flag */
+  onAutoSearchDone?: () => void
+  /** Expose search function via ref so parent can call it imperatively */
+  searchRef?: React.MutableRefObject<(() => void) | null>
 }
 
 function getScoreColor(score: number): string {
@@ -39,7 +45,14 @@ function getScoreBgCard(score: number): string {
   return 'border-red-200 bg-red-50'
 }
 
-export default function RomeoPredict({ onSelect, initialText = '', className = '' }: RomeoPredictProps) {
+export default function RomeoPredict({
+  onSelect,
+  initialText = '',
+  className = '',
+  autoSearch = false,
+  onAutoSearchDone,
+  searchRef,
+}: RomeoPredictProps) {
   const [texte, setTexte] = useState(initialText)
   const [results, setResults] = useState<RomeoAppellation[]>([])
   const [loading, setLoading] = useState(false)
@@ -47,6 +60,28 @@ export default function RomeoPredict({ onSelect, initialText = '', className = '
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
   const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL || ''
+
+  // Sync texte when initialText is updated externally (e.g. after audio transcription)
+  const prevInitialText = useRef(initialText)
+  useEffect(() => {
+    if (initialText && initialText !== prevInitialText.current) {
+      prevInitialText.current = initialText
+      setTexte(initialText)
+    }
+  }, [initialText])
+
+  // Expose handleSearch via searchRef
+  useEffect(() => {
+    if (searchRef) searchRef.current = handleSearch
+  }) // intentionally runs every render so ref stays fresh
+
+  // Auto-search trigger
+  useEffect(() => {
+    if (autoSearch && texte.trim()) {
+      handleSearch()
+      onAutoSearchDone?.()
+    }
+  }, [autoSearch]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearch = async () => {
     if (!texte.trim()) return

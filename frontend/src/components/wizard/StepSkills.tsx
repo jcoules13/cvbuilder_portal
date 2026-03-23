@@ -3,6 +3,7 @@ import { Plus, X } from 'lucide-react'
 import type { CVData } from '../../types/cv'
 import ArrayFieldEditor from '../cv-edit/ArrayFieldEditor'
 import RomeCompetenceAutocomplete from '../shared/RomeCompetenceAutocomplete'
+import AudioCapture from '../shared/AudioCapture'
 
 interface StepSkillsProps {
   data: CVData
@@ -107,7 +108,34 @@ function TechSkillsEditor({
   )
 }
 
+/**
+ * Parse a transcribed sentence into individual competences.
+ * Splits on commas, semicolons, "et", periods, and line breaks.
+ */
+function parseCompetences(text: string): string[] {
+  return text
+    .split(/[,;.!?\n]+|\s+et\s+/i)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 2) // Ignore very short tokens
+}
+
 export default function StepSkills({ data, onChange }: StepSkillsProps) {
+  const [showAudio, setShowAudio] = useState(false)
+  const [audioAdded, setAudioAdded] = useState<string[]>([])
+
+  const handleDictation = (text: string) => {
+    const parsed = parseCompetences(text)
+    const current = data.competences_techniques
+    const newItems = parsed.filter((item) => !current.includes(item))
+
+    if (newItems.length > 0) {
+      onChange({ competences_techniques: [...current, ...newItems] })
+      setAudioAdded(newItems)
+    }
+
+    setShowAudio(false)
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -115,6 +143,47 @@ export default function StepSkills({ data, onChange }: StepSkillsProps) {
         <p className="text-sm text-gray-500 mt-1">
           Ajoutez vos competences techniques et vos qualites personnelles (soft skills).
         </p>
+      </div>
+
+      {/* Audio dictation section */}
+      <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
+        {!showAudio ? (
+          <button
+            type="button"
+            onClick={() => { setShowAudio(true); setAudioAdded([]) }}
+            className="flex items-center gap-3 px-6 py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 active:scale-95 transition-all shadow-sm text-base w-full justify-center"
+          >
+            🎤 Dicter mes compétences
+          </button>
+        ) : (
+          <>
+            <p className="text-sm font-medium text-gray-700 text-center">
+              🎤 Parlez de vos compétences — elles seront ajoutées automatiquement
+            </p>
+            <AudioCapture
+              onTranscription={handleDictation}
+              placeholder="Ex : je sais conduire un chariot, je parle anglais, je gère les stocks..."
+            />
+            <button
+              type="button"
+              onClick={() => setShowAudio(false)}
+              className="text-xs text-gray-400 hover:text-gray-600 w-full text-center"
+            >
+              Annuler
+            </button>
+          </>
+        )}
+
+        {audioAdded.length > 0 && (
+          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-sm text-green-700 font-medium mb-1">
+              ✅ {audioAdded.length} compétence{audioAdded.length > 1 ? 's' : ''} ajoutée{audioAdded.length > 1 ? 's' : ''} :
+            </p>
+            <ul className="text-sm text-green-600 list-disc list-inside">
+              {audioAdded.map((item, i) => <li key={i}>{item}</li>)}
+            </ul>
+          </div>
+        )}
       </div>
 
       <TechSkillsEditor

@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { ChevronDown, ChevronUp, Lightbulb } from 'lucide-react'
 import type { CVData } from '../../types/cv'
 import RomeoPredict from '../shared/RomeoPredict'
+import AudioCapture from '../shared/AudioCapture'
 
 interface StepProfileProps {
   data: CVData
@@ -10,10 +11,24 @@ interface StepProfileProps {
 
 export default function StepProfile({ data, onChange }: StepProfileProps) {
   const [romeoOpen, setRomeoOpen] = useState(false)
+  // Ref to imperatively set the RomeoPredict textarea value via a shared state
+  const [romeoText, setRomeoText] = useState('')
+  const [autoSearch, setAutoSearch] = useState(false)
+  const romeoSearchRef = useRef<(() => void) | null>(null)
 
   const handleRomeoSelect = (libelle: string, _codeRome: string) => {
     onChange({ titre_profil: libelle })
     setRomeoOpen(false)
+  }
+
+  /**
+   * Called when AudioCapture returns a transcription.
+   * Opens the ROMEO block, fills the textarea, and triggers search.
+   */
+  const handleAudioTranscription = (text: string) => {
+    setRomeoText(text)
+    setRomeoOpen(true)
+    setAutoSearch(true)
   }
 
   return (
@@ -57,18 +72,55 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
           </button>
 
           {romeoOpen && (
-            <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+            <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-4">
               <p className="text-sm text-blue-800 mb-3 font-medium">
                 Décrivez ce que vous faites au travail avec vos propres mots.
                 L'IA va trouver le titre de métier qui correspond.
               </p>
               <RomeoPredict
                 onSelect={handleRomeoSelect}
-                initialText={data.titre_profil}
+                initialText={romeoText || data.titre_profil}
+                autoSearch={autoSearch}
+                onAutoSearchDone={() => setAutoSearch(false)}
+                searchRef={romeoSearchRef}
               />
+
+              {/* Divider */}
+              <div className="relative flex items-center my-2">
+                <div className="flex-grow border-t border-blue-200" />
+                <span className="mx-3 text-xs text-blue-400 font-medium">ou</span>
+                <div className="flex-grow border-t border-blue-200" />
+              </div>
+
+              {/* Audio capture inside ROMEO block */}
+              <div className="p-3 bg-white border border-blue-100 rounded-xl">
+                <p className="text-sm font-medium text-gray-700 mb-3 text-center">
+                  🎤 Décrivez votre métier à voix haute
+                </p>
+                <AudioCapture
+                  onTranscription={(text) => {
+                    setRomeoText(text)
+                    setAutoSearch(true)
+                  }}
+                  placeholder="Parlez et l'IA retranscrira ce que vous dites"
+                />
+              </div>
             </div>
           )}
         </div>
+
+        {/* Audio capture outside ROMEO block — shortcut to open + fill */}
+        {!romeoOpen && (
+          <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+            <p className="text-sm font-medium text-gray-700 mb-3 text-center">
+              🎤 Ou décrivez votre métier à voix haute
+            </p>
+            <AudioCapture
+              onTranscription={handleAudioTranscription}
+              placeholder="Parlez de votre métier, l'IA trouvera la bonne appellation ROME"
+            />
+          </div>
+        )}
       </div>
 
       <div>
