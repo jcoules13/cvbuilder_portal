@@ -1,7 +1,8 @@
 import type { CVData } from '../types/cv'
 
 const WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL || ''
-const RECRUTEUR_SLUG = import.meta.env.VITE_RECRUTEUR_SLUG || 'vertigo'
+// Fallback slug from env (can be overridden by URL ?ref= parameter)
+const DEFAULT_RECRUTEUR_SLUG = import.meta.env.VITE_RECRUTEUR_SLUG || 'vertigo'
 
 interface SubmitResponse {
   success: boolean
@@ -9,10 +10,10 @@ interface SubmitResponse {
   candidat_id?: string
 }
 
-export async function submitCV(data: CVData): Promise<SubmitResponse> {
+export async function submitCV(data: CVData, recruteurSlug?: string | null): Promise<SubmitResponse> {
   const payload = {
     ...data,
-    recruteur_slug: RECRUTEUR_SLUG,
+    recruteur_slug: recruteurSlug || DEFAULT_RECRUTEUR_SLUG,
   }
 
   const response = await fetch(`${WEBHOOK_URL}/cv-builder-submit`, {

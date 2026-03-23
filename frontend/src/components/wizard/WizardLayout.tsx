@@ -1,4 +1,6 @@
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react'
+import ThemeToggle from '../shared/ThemeToggle'
+import { useRecruteur } from '../../contexts/RecruteurContext'
 
 const STEPS = [
   'Informations',
@@ -34,28 +36,40 @@ export default function WizardLayout({
   onSubmit,
   children,
 }: WizardLayoutProps) {
+  const { recruteurSlug } = useRecruteur()
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
-            CV Builder
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Creez votre CV en quelques etapes
-          </p>
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
+              CV Builder
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Creez votre CV en quelques etapes
+            </p>
+          </div>
+          <ThemeToggle />
         </div>
       </header>
 
+      {/* Recruteur badge */}
+      {recruteurSlug && (
+        <div className="text-xs text-center text-gray-400 dark:text-gray-500 py-1 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+          Formulaire partagé par : <span className="font-medium">{recruteurSlug}</span>
+        </div>
+      )}
+
       {/* Progress bar */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Etape {currentStep + 1} sur {totalSteps}
             </span>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-gray-500 dark:text-gray-400">
               {STEPS[currentStep]}
             </span>
           </div>
@@ -70,12 +84,12 @@ export default function WizardLayout({
                       ? 'bg-primary-500'
                       : index === currentStep
                       ? 'bg-accent-500'
-                      : 'bg-gray-200'
+                      : 'bg-gray-200 dark:bg-gray-600'
                   }`}
                 />
                 <span
                   className={`text-xs mt-1 hidden sm:block ${
-                    index <= currentStep ? 'text-primary-600 font-medium' : 'text-gray-400'
+                    index <= currentStep ? 'text-primary-600 font-medium' : 'text-gray-400 dark:text-gray-500'
                   }`}
                 >
                   {step}
@@ -88,7 +102,7 @@ export default function WizardLayout({
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="card">
+        <div className="card dark:bg-gray-800 dark:border-gray-700">
           <div className="card-body p-6 sm:p-8">
             {children}
           </div>
@@ -100,7 +114,7 @@ export default function WizardLayout({
             type="button"
             onClick={onPrev}
             disabled={currentStep === 0}
-            className="btn-secondary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-secondary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
           >
             <ChevronLeft className="h-4 w-4" />
             Precedent
