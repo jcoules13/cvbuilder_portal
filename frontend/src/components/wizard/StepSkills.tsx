@@ -170,13 +170,6 @@ export default function StepSkills({ data, onChange }: StepSkillsProps) {
       />
 
       <div className="border-t border-gray-200 pt-4 space-y-2">
-        <ArrayFieldEditor
-          label="Qualités personnelles (soft skills)"
-          value={data.soft_skills}
-          onChange={(val) => onChange({ soft_skills: val })}
-          placeholder="ex: Travail en équipe, Communication, Rigueur..."
-          addButtonText="Ajouter"
-        />
         <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-2">
           <p className="text-sm font-medium text-gray-700">
             🎤 Dictez vos qualités personnelles
@@ -196,6 +189,13 @@ export default function StepSkills({ data, onChange }: StepSkillsProps) {
             placeholder=""
           />
         </div>
+        <ArrayFieldEditor
+          label="Qualités personnelles (soft skills)"
+          value={data.soft_skills}
+          onChange={(val) => onChange({ soft_skills: val })}
+          placeholder="ex: Travail en équipe, Communication, Rigueur..."
+          addButtonText="Ajouter"
+        />
       </div>
     </div>
   )
