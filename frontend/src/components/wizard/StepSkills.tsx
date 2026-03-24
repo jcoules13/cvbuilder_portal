@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Plus, X } from 'lucide-react'
 import type { CVData } from '../../types/cv'
 import ArrayFieldEditor from '../cv-edit/ArrayFieldEditor'
@@ -122,9 +122,15 @@ function parseCompetences(text: string): string[] {
 export default function StepSkills({ data, onChange }: StepSkillsProps) {
   const [audioAdded, setAudioAdded] = useState<string[]>([])
 
+  // Refs to always have latest values in closures
+  const techRef = useRef<string[]>(data.competences_techniques)
+  const softRef = useRef<string[]>(data.soft_skills)
+  useEffect(() => { techRef.current = data.competences_techniques }, [data.competences_techniques])
+  useEffect(() => { softRef.current = data.soft_skills }, [data.soft_skills])
+
   const handleDictation = (text: string) => {
     const parsed = parseCompetences(text)
-    const current = data.competences_techniques
+    const current = techRef.current
     const newItems = parsed.filter((item) => !current.includes(item))
 
     if (newItems.length > 0) {
@@ -177,13 +183,14 @@ export default function StepSkills({ data, onChange }: StepSkillsProps) {
           <AudioCapture
             onTranscription={(text) => {
               // Split transcription into individual soft skills
+              const current = softRef.current
               const items = text
                 .split(/[,;.\n]+/)
                 .map((s) => s.trim())
                 .filter((s) => s.length > 1)
-                .filter((s) => !data.soft_skills.includes(s))
+                .filter((s) => !current.includes(s))
               if (items.length > 0) {
-                onChange({ soft_skills: [...data.soft_skills, ...items] })
+                onChange({ soft_skills: [...current, ...items] })
               }
             }}
             placeholder=""

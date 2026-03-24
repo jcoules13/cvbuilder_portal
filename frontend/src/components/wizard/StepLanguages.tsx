@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react'
 import type { CVData } from '../../types/cv'
 import ArrayFieldEditor from '../cv-edit/ArrayFieldEditor'
 import AudioCapture from '../shared/AudioCapture'
@@ -8,8 +9,13 @@ interface StepLanguagesProps {
 }
 
 export default function StepLanguages({ data, onChange }: StepLanguagesProps) {
+  const languesRef = useRef<string[]>(data.langues)
+  const loisirsRef = useRef<string[]>(data.loisirs)
+  useEffect(() => { languesRef.current = data.langues }, [data.langues])
+  useEffect(() => { loisirsRef.current = data.loisirs }, [data.loisirs])
+
   const parseAndAdd = (text: string, field: 'langues' | 'loisirs') => {
-    const current = data[field] as string[]
+    const current = field === 'langues' ? languesRef.current : loisirsRef.current
     const items = text
       .split(/[,;.\n]+/)
       .map((s) => s.trim())

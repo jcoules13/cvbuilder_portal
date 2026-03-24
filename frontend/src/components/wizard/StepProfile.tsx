@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import type { CVData } from '../../types/cv'
 import RomeoPredict from '../shared/RomeoPredict'
@@ -13,6 +13,8 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
   const [romeoText, setRomeoText] = useState('')
   const [autoSearch, setAutoSearch] = useState(false)
   const romeoSearchRef = useRef<(() => void) | null>(null)
+  const resumeRef = useRef<string>(data.resume_profil)
+  useEffect(() => { resumeRef.current = data.resume_profil }, [data.resume_profil])
 
   // AI enhance state
   const [enhancing, setEnhancing] = useState(false)
@@ -27,7 +29,7 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
 
 
   const handleResumeAudioTranscription = (text: string) => {
-    onChange({ resume_profil: (data.resume_profil ? data.resume_profil + ' ' : '') + text })
+    onChange({ resume_profil: (resumeRef.current ? resumeRef.current + ' ' : '') + text })
   }
 
   const handleEnhanceResume = async () => {

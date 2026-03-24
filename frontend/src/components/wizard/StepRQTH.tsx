@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react'
 import type { CVData } from '../../types/cv'
 import AudioCapture from '../shared/AudioCapture'
 
@@ -7,6 +8,9 @@ interface StepRQTHProps {
 }
 
 export default function StepRQTH({ data, onChange }: StepRQTHProps) {
+  const detailsRef = useRef<string>(data.rqth_details)
+  useEffect(() => { detailsRef.current = data.rqth_details }, [data.rqth_details])
+
   return (
     <div className="space-y-6">
       <div>
@@ -51,7 +55,7 @@ export default function StepRQTH({ data, onChange }: StepRQTHProps) {
           </p>
           <div className="mt-2">
             <AudioCapture
-              onTranscription={(text) => onChange({ rqth_details: (data.rqth_details ? data.rqth_details + ' ' : '') + text })}
+              onTranscription={(text) => onChange({ rqth_details: (detailsRef.current ? detailsRef.current + ' ' : '') + text })}
               placeholder=""
             />
           </div>
