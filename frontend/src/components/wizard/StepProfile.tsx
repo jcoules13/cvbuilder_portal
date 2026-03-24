@@ -22,8 +22,8 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
 
   const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL || ''
 
-  const handleRomeoSelect = (libelle: string, _codeRome: string) => {
-    onChange({ titre_profil: libelle })
+  const handleRomeoSelect = (libelle: string, codeRome: string) => {
+    onChange({ titre_profil: libelle, code_rome: codeRome })
   }
 
 
