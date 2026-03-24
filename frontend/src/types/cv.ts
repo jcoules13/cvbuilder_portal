@@ -22,6 +22,8 @@ export interface CVData {
   date_naissance: string
   adresse_ville: string
   permis: string
+  // ROME
+  code_rome?: string
   // Public
   titre_profil: string
   resume_profil: string
