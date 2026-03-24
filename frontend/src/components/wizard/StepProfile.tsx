@@ -27,7 +27,7 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
 
 
   const handleResumeAudioTranscription = (text: string) => {
-    onChange({ resume_profil: text })
+    onChange({ resume_profil: (data.resume_profil ? data.resume_profil + ' ' : '') + text })
   }
 
   const handleEnhanceResume = async () => {

@@ -1,4 +1,5 @@
-import type { CVData } from '../../types/cv'
+import { useRef, useEffect } from 'react'
+import type { CVData, Formation } from '../../types/cv'
 import FormationEditor from '../cv-edit/FormationEditor'
 import AudioCapture from '../shared/AudioCapture'
 
@@ -8,6 +9,9 @@ interface StepFormationsProps {
 }
 
 export default function StepFormations({ data, onChange }: StepFormationsProps) {
+  const formationsRef = useRef<Formation[]>(data.formations)
+  useEffect(() => { formationsRef.current = data.formations }, [data.formations])
+
   return (
     <div className="space-y-4">
       <div>
@@ -22,13 +26,13 @@ export default function StepFormations({ data, onChange }: StepFormationsProps) 
           🎤 Décrivez une formation à voix haute
         </p>
         <p className="text-xs text-gray-400">
-          Ex : "J'ai obtenu un BTS informatique en 2015 au lycée Henri IV à Paris"
+          Chaque dictée ajoute une nouvelle formation. Vous pouvez parler plusieurs fois.
         </p>
         <AudioCapture
           onTranscription={(text) => {
             onChange({
               formations: [
-                ...data.formations,
+                ...formationsRef.current,
                 {
                   annee: '',
                   diplome: text.trim(),

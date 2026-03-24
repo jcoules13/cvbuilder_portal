@@ -51,7 +51,7 @@ export default function StepRQTH({ data, onChange }: StepRQTHProps) {
           </p>
           <div className="mt-2">
             <AudioCapture
-              onTranscription={(text) => onChange({ rqth_details: text })}
+              onTranscription={(text) => onChange({ rqth_details: (data.rqth_details ? data.rqth_details + ' ' : '') + text })}
               placeholder=""
             />
           </div>

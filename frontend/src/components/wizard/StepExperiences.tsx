@@ -1,4 +1,5 @@
-import type { CVData } from '../../types/cv'
+import { useRef, useEffect } from 'react'
+import type { CVData, Experience } from '../../types/cv'
 import ExperienceEditor from '../cv-edit/ExperienceEditor'
 import AudioCapture from '../shared/AudioCapture'
 
@@ -8,6 +9,10 @@ interface StepExperiencesProps {
 }
 
 export default function StepExperiences({ data, onChange }: StepExperiencesProps) {
+  // Use ref to always have the latest experiences in the closure
+  const experiencesRef = useRef<Experience[]>(data.experiences)
+  useEffect(() => { experiencesRef.current = data.experiences }, [data.experiences])
+
   return (
     <div className="space-y-4">
       <div>
@@ -22,15 +27,13 @@ export default function StepExperiences({ data, onChange }: StepExperiencesProps
           🎤 Décrivez une expérience professionnelle à voix haute
         </p>
         <p className="text-xs text-gray-400">
-          Ex : "J'ai travaillé chez Carrefour pendant 3 ans comme caissier, je gérais l'encaissement et l'accueil client"
+          Chaque dictée ajoute une nouvelle expérience. Vous pouvez parler plusieurs fois.
         </p>
         <AudioCapture
           onTranscription={(text) => {
-            // Add a new experience with the transcription as description
-            // The user can then edit the fields (titre, entreprise, periode)
             onChange({
               experiences: [
-                ...data.experiences,
+                ...experiencesRef.current,
                 {
                   periode: '',
                   titre: '',
