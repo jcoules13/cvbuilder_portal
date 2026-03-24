@@ -26,7 +26,7 @@ export async function submitCV(data: CVData, recruteurSlug?: string | null): Pro
 
     // 2. Insert candidat_prive (personal data)
     const { data: candidatPrive, error: priveError } = await supabase
-      .from('candidats_prives')
+      .from('candidats_prive')
       .insert({
         nom: data.nom,
         prenom: data.prenom,
@@ -43,7 +43,7 @@ export async function submitCV(data: CVData, recruteurSlug?: string | null): Pro
 
     // 3. Insert candidat_public (CV data visible to recruteurs)
     const { data: candidatPublic, error: publicError } = await supabase
-      .from('candidats_publics')
+      .from('candidats_public')
       .insert({
         id: candidatPrive.id, // same ID links both records
         titre_profil: data.titre_profil || null,
