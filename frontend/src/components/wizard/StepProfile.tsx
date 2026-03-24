@@ -24,6 +24,8 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
     onChange({ titre_profil: libelle })
   }
 
+
+
   const handleResumeAudioTranscription = (text: string) => {
     onChange({ resume_profil: text })
   }
