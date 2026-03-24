@@ -80,7 +80,7 @@ export default function WizardPage() {
       const result = await submitCV(data)
 
       if (result.success) {
-        navigate('/success', { state: { email: data.email, prenom: data.prenom } })
+        navigate('/success', { state: { email: data.email, prenom: data.prenom, candidat_id: result.candidat_id } })
       } else {
         setError(result.message || 'Une erreur est survenue lors de l\'enregistrement.')
       }
