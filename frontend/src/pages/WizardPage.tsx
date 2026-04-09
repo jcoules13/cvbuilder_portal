@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { CVData, initialCVData } from '../types/cv'
 import { submitCV } from '../lib/api'
 import { useRecruteur } from '../contexts/RecruteurContext'
@@ -45,6 +45,8 @@ function validateStep(step: number, data: CVData): boolean {
 
 export default function WizardPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const refSlug = searchParams.get('ref') || undefined
   const [currentStep, setCurrentStep] = useState(0)
   const [data, setData] = useState<CVData>(initialCVData)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -77,7 +79,7 @@ export default function WizardPage() {
     setError(null)
 
     try {
-      const result = await submitCV(data)
+      const result = await submitCV(data, refSlug)
 
       if (result.success) {
         navigate('/success', { state: { email: data.email, prenom: data.prenom, candidat_id: result.candidat_id } })
