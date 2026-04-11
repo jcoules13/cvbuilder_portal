@@ -1,4 +1,5 @@
 import type { CVData } from '../../types/cv'
+import CommuneAutocomplete from '../shared/CommuneAutocomplete'
 
 interface StepPersonalInfoProps {
   data: CVData
@@ -85,12 +86,9 @@ export default function StepPersonalInfo({ data, onChange }: StepPersonalInfoPro
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="label">Ville</label>
-          <input
-            type="text"
+          <CommuneAutocomplete
             value={data.adresse_ville}
-            onChange={(e) => onChange({ adresse_ville: e.target.value })}
-            placeholder="Paris"
-            className="input"
+            onChange={(v) => onChange({ adresse_ville: v })}
           />
         </div>
 

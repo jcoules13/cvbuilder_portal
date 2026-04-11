@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { Plus, X } from 'lucide-react'
 import type { CVData } from '../../types/cv'
 import ArrayFieldEditor from '../cv-edit/ArrayFieldEditor'
 import RomeCompetenceAutocomplete from '../shared/RomeCompetenceAutocomplete'
+import RomeSuggestedSkills from '../shared/RomeSuggestedSkills'
 import AudioCapture from '../shared/AudioCapture'
 
 interface StepSkillsProps {
@@ -122,6 +123,12 @@ function parseCompetences(text: string): string[] {
 export default function StepSkills({ data, onChange }: StepSkillsProps) {
   const [audioAdded, setAudioAdded] = useState<string[]>([])
 
+  // Collect ROME codes from experiences for suggestions
+  const romeCodes = useMemo(
+    () => [...new Set(data.experiences.filter((e) => e.code_rome).map((e) => e.code_rome!))],
+    [data.experiences]
+  )
+
   // Refs to always have latest values in closures
   const techRef = useRef<string[]>(data.competences_techniques)
   const softRef = useRef<string[]>(data.soft_skills)
@@ -173,6 +180,15 @@ export default function StepSkills({ data, onChange }: StepSkillsProps) {
       <TechSkillsEditor
         value={data.competences_techniques}
         onChange={(val) => onChange({ competences_techniques: val })}
+      />
+
+      {/* ROME suggested skills from experiences */}
+      <RomeSuggestedSkills
+        romeCodes={romeCodes}
+        existingSkills={[...data.competences_techniques, ...data.soft_skills]}
+        onAddSkills={(skills) =>
+          onChange({ competences_techniques: [...data.competences_techniques, ...skills] })
+        }
       />
 
       <div className="border-t border-gray-200 pt-4 space-y-2">

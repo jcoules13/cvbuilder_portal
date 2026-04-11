@@ -1,4 +1,4 @@
-import { User, Briefcase, Shield, Code, Globe, Building2, GraduationCap } from 'lucide-react'
+import { User, Briefcase, Shield, Code, Globe, Building2, GraduationCap, CheckCircle, AlertCircle, BarChart2 } from 'lucide-react'
 import type { CVData } from '../../types/cv'
 
 interface StepReviewProps {
@@ -47,6 +47,25 @@ export default function StepReview({ data }: StepReviewProps) {
   if (!data.email) missingFields.push('Email')
   if (!data.titre_profil) missingFields.push('Titre du profil')
 
+  // ATS score calculation
+  const atsChecks = [
+    { label: 'Titre du profil renseigne', ok: !!data.titre_profil.trim() },
+    { label: 'Code ROME associe', ok: !!data.code_rome },
+    { label: 'Resume professionnel', ok: !!data.resume_profil.trim() },
+    { label: 'Competences techniques (5+)', ok: data.competences_techniques.length >= 5 },
+    { label: 'Soft skills renseignees', ok: data.soft_skills.length > 0 },
+    { label: 'Ville avec code postal', ok: /\d{5}/.test(data.adresse_ville) },
+    { label: 'Experiences professionnelles', ok: data.experiences.length > 0 },
+    { label: 'Experiences avec code ROME', ok: data.experiences.some((e) => e.code_rome) },
+    { label: 'Formations renseignees', ok: data.formations.length > 0 },
+    { label: 'Langues renseignees', ok: data.langues.length > 0 },
+  ]
+  const atsScore = Math.round((atsChecks.filter((c) => c.ok).length / atsChecks.length) * 100)
+  const atsColor =
+    atsScore >= 80 ? 'text-green-600' : atsScore >= 50 ? 'text-amber-600' : 'text-red-600'
+  const atsBgColor =
+    atsScore >= 80 ? 'bg-green-500' : atsScore >= 50 ? 'bg-amber-500' : 'bg-red-500'
+
   return (
     <div className="space-y-6">
       <div>
@@ -68,6 +87,35 @@ export default function StepReview({ data }: StepReviewProps) {
           </ul>
         </div>
       )}
+
+      {/* ATS Score */}
+      <div className="border border-gray-200 rounded-lg p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <BarChart2 className="h-5 w-5 text-indigo-500" />
+          <h3 className="font-medium text-gray-900">Score de compatibilite ATS</h3>
+          <span className={`ml-auto text-lg font-bold ${atsColor}`}>{atsScore}%</span>
+        </div>
+        <div className="w-full h-2 bg-gray-200 rounded-full mb-3">
+          <div className={`h-2 rounded-full transition-all ${atsBgColor}`} style={{ width: `${atsScore}%` }} />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+          {atsChecks.map((check, i) => (
+            <div key={i} className="flex items-center gap-1.5 text-xs">
+              {check.ok ? (
+                <CheckCircle className="h-3.5 w-3.5 text-green-500 flex-shrink-0" />
+              ) : (
+                <AlertCircle className="h-3.5 w-3.5 text-gray-300 flex-shrink-0" />
+              )}
+              <span className={check.ok ? 'text-gray-700' : 'text-gray-400'}>
+                {check.label}
+              </span>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-gray-500 mt-3">
+          Un score eleve augmente la visibilite de votre CV aupres des systemes de recrutement automatises (ATS).
+        </p>
+      </div>
 
       <div className="space-y-4">
         {/* Informations personnelles */}
@@ -137,7 +185,14 @@ export default function StepReview({ data }: StepReviewProps) {
             <div className="space-y-3">
               {data.experiences.map((exp, i) => (
                 <div key={i} className="text-sm border-l-2 border-primary-200 pl-3">
-                  <p className="font-medium text-gray-900">{exp.titre || 'Sans titre'}</p>
+                  <p className="font-medium text-gray-900">
+                    {exp.titre || 'Sans titre'}
+                    {exp.code_rome && (
+                      <span className="ml-2 px-1.5 py-0.5 bg-indigo-50 text-indigo-600 text-xs rounded">
+                        {exp.code_rome}
+                      </span>
+                    )}
+                  </p>
                   <p className="text-gray-600">{exp.entreprise} {exp.periode && `- ${exp.periode}`}</p>
                   {exp.description && (
                     <p className="text-gray-500 mt-1 line-clamp-2">{exp.description}</p>

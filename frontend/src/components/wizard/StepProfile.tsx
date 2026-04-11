@@ -19,8 +19,25 @@ export default function StepProfile({ data, onChange }: StepProfileProps) {
   // AI enhance state
   const [enhancing, setEnhancing] = useState(false)
   const [enhanceError, setEnhanceError] = useState<string | null>(null)
+  const [suggestionShown, setSuggestionShown] = useState(false)
 
   const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL || ''
+
+  // Auto-suggest titre from experiences (most recent with code_rome)
+  useEffect(() => {
+    if (data.titre_profil || suggestionShown) return
+    const expWithRome = data.experiences.find((e) => e.code_rome && e.titre)
+    if (expWithRome) {
+      onChange({ titre_profil: expWithRome.titre, code_rome: expWithRome.code_rome })
+      setSuggestionShown(true)
+    } else if (data.experiences.length > 0 && data.experiences[0].titre) {
+      // No ROME but has a title — use it and trigger ROMEO auto-search
+      onChange({ titre_profil: data.experiences[0].titre })
+      setRomeoText(data.experiences[0].titre)
+      setAutoSearch(true)
+      setSuggestionShown(true)
+    }
+  }, [data.experiences, data.titre_profil, suggestionShown])
 
   const handleRomeoSelect = (libelle: string, codeRome: string) => {
     onChange({ titre_profil: libelle, code_rome: codeRome })
